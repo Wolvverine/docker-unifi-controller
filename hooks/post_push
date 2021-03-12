@@ -1,0 +1,22 @@
+#!/bin/bash
+set -e
+set -x
+UNIFI_BRANCH="stable"
+if [ -z ${UNIFI_VERSION} ]; then \
+    UNIFI_VERSION=$(curl -sX GET http://dl-origin.ubnt.com/unifi/debian/dists/${UNIFI_BRANCH}/ubiquiti/binary-amd64/Packages \
+    |grep -A 7 -m 1 'Package: unifi' \
+    | awk -F ': ' '/Version/{print $2;exit}' \
+    | awk -F '-' '{print $1}');
+fi
+
+
+if [ $DOCKER_TAG == "latest" ]
+then
+	tagStart=$(expr index "$IMAGE_NAME" :)
+	repoName=${IMAGE_NAME:0:tagStart-1}
+	docker tag ${IMAGE_NAME} ${repoName}:${UNIFI_VERSION}
+    docker tag ${IMAGE_NAME} ${repoName}:${UNIFI_VERSION}-latest
+	docker push ${repoName}
+else
+	echo "test"
+fi
